@@ -1,0 +1,34 @@
+import PropTypes from 'prop-types';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+// project imports
+import useAuth from 'hooks/useAuth';
+
+// ==============================|| AUTH GUARD ||============================== //
+
+/**
+ * Authentication guard for routes
+ * @param {PropTypes.node} children children element/node
+ */
+const AuthGuard = ({ children }) => {
+    const { isLoggedIn } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!isLoggedIn) {
+            console.log("seff");
+            // navigate('login', { replace: true });
+            // Force page to redirect to flush global states
+            window.location.href = process.env.REACT_APP_BASE_NAME + '/login';
+        }
+    }, [isLoggedIn, navigate]);
+
+    return children;
+};
+
+AuthGuard.propTypes = {
+    children: PropTypes.node
+};
+
+export default AuthGuard;
