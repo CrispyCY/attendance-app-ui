@@ -55,8 +55,8 @@ const StudentProfile = () => {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get('student/getStudent?id=' + id, { withCredentials: true });
-            response.data.classIds = response.data.classes.map(item => item.id);
+            const response = await axios.get('student/' + id, { withCredentials: true });
+            // response.data.classIds = response.data.classes.map(item => item.id);
 
             setStudentDetail(response.data);
             setIsLoading(false)

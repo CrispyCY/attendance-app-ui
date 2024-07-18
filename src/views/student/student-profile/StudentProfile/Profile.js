@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import React from 'react';
 
 // material-ui
 import {
     Avatar, Button, Grid, Stack, TextField, Typography,
-    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Slide, Autocomplete, MenuItem
+    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Slide
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -18,7 +18,7 @@ const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={r
 // project imports
 import SubCard from 'ui-component/cards/SubCard';
 import AnimateButton from 'ui-component/extended/AnimateButton';
-import { COMPANIES, gridSpacing } from 'store/constant';
+import { gridSpacing } from 'store/constant';
 import { PHONE_NO_REGEX } from 'store/constant';
 import { openSnackbar } from 'store/slices/snackbar';
 import CustomSkeleton from 'ui-component/custom/CustomSkeleton';
@@ -35,15 +35,15 @@ import * as yup from 'yup';
 import dayjs from 'dayjs';
 
 const validationSchema = yup.object({
-    studentName: yup.string().min(5, 'Name should be of minimum 5 characters length').required('Name is required'),
+    name: yup.string().min(5, 'Name should be of minimum 5 characters length').required('Name is required'),
     email: yup.string()
         .notRequired()
         .nullable()
         .email('Email is invalid'),
-    guardianContact1: yup.string()
+    phone_no1: yup.string()
         .required('At least 1 phone number is required')
         .matches(PHONE_NO_REGEX, 'Phone number is not in correct format'),
-    guardianContact2: yup.string()
+    phone_no2: yup.string()
         .notRequired()
         .nullable(),
     address: yup.string()
@@ -52,156 +52,44 @@ const validationSchema = yup.object({
     bio: yup.string()
         .notRequired()
         .nullable(),
-    slot: yup.number()
+    slot_count: yup.number()
 });
 
 // ==============================|| PROFILE 3 - PROFILE ||============================== //
 
 const Profile = (prop) => {
-    const { logout, user } = useAuth();
+    const { logout } = useAuth();
     const theme = useTheme();
     const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
-    const [doBInput, setDoBInput] = useState(prop.studentDetail?.doB ? dayjs(prop.studentDetail?.doB) : dayjs());
-
-    // Get Group Data
-    const [groupData, setGroupData] = useState([]);
-    const [groupValue, setGroupValue] = useState(prop.studentDetail?.studentGroupId ?? 1);
-
-    const fetchGroupData = async () => {
-        try {
-            const response = await axios.get('studentGroup', { withCredentials: true });
-
-            setGroupData(response.data);
-            setIsLoading(false)
-        } catch (error) {
-            if (error?.response?.status === 401) {
-                dispatch(
-                    openSnackbar({
-                        open: true,
-                        message: 'Login Expired! Please re-login!',
-                        variant: 'alert',
-                        alert: {
-                            color: 'error'
-                        },
-                        close: true
-                    })
-                );
-                await logout();
-            } else {
-                dispatch(
-                    openSnackbar({
-                        open: true,
-                        message: 'Error Occurred!',
-                        variant: 'alert',
-                        alert: {
-                            color: 'error'
-                        },
-                        close: true
-                    })
-                );
-            }
-            console.log(error)
-        }
-    };
-
-    useEffect(() => {
-        if (user?.orgId === COMPANIES.WUSHU) {
-            fetchGroupData(); // Call the API function when the component mounts
-        }
-    }, []);
-
-    const handleChangeGroup = (event) => {
-        setGroupValue(event.target.value);
-    };
-
-    // Get Class Data
-    const [classData, setClassData] = useState([]);
-    const [classValues, setClassValues] = useState([]);
-
-    const fetchClassData = async () => {
-        try {
-            const response = await axios.get('class/list', { withCredentials: true });
-
-            setClassData(response.data);
-            setClassValues(response.data.filter(item => prop.studentDetail?.classIds.includes(item.id)))
-
-            setIsLoading(false)
-        } catch (error) {
-            if (error?.response?.status === 401) {
-                dispatch(
-                    openSnackbar({
-                        open: true,
-                        message: 'Login Expired! Please re-login!',
-                        variant: 'alert',
-                        alert: {
-                            color: 'error'
-                        },
-                        close: true
-                    })
-                );
-                await logout();
-            } else {
-                dispatch(
-                    openSnackbar({
-                        open: true,
-                        message: 'Error Occurred!',
-                        variant: 'alert',
-                        alert: {
-                            color: 'error'
-                        },
-                        close: true
-                    })
-                );
-            }
-            console.log(error)
-        }
-    };
-
-    useEffect(() => {
-        if (user?.orgId === COMPANIES.DVOTION) {
-            fetchClassData(); // Call the API function when the component mounts
-        }
-    }, []);
-
-    const handleOnChange = (event, newValue) => {
-        setClassValues(newValue)
-    };
+    const [doBInput, setDoBInput] = useState(prop.studentDetail?.dob ? dayjs(prop.studentDetail?.dob) : dayjs());
 
     const formik = useFormik({
         initialValues: {
-            studentName: prop.studentDetail?.studentName ?? '',
+            name: prop.studentDetail?.name ?? '',
             email: prop.studentDetail?.email ?? '',
-            guardianContact1: prop.studentDetail?.guardianContact1 ?? '',
-            guardianContact2: prop.studentDetail?.guardianContact2 ?? '',
-            doB: dayjs(prop.studentDetail?.doB) ?? dayjs(),
+            phone_no1: prop.studentDetail?.phone_no1 ?? '',
+            phone_no2: prop.studentDetail?.phone_no2 ?? '',
+            dob: dayjs(prop.studentDetail?.dob) ?? dayjs(),
             address: prop.studentDetail?.address ?? '',
             bio: prop.studentDetail?.bio ?? '',
-            slot: prop.studentDetail?.slot ?? 0,
+            slot_count: prop.studentDetail?.slot_count ?? 0,
         },
         validationSchema,
         onSubmit: async (values, { setSubmitting }) => {
             try {
-                // Check if email and guardianContact2 are empty or undefined
+                // Check if email and phone_no2 are empty or undefined
                 if (values.email === '' || values.email === undefined) {
                     delete values.email; // Remove the email field from values
                 }
-                if (values.guardianContact2 === '' || values.guardianContact2 === undefined) {
-                    delete values.guardianContact2; // Remove the guardianContact2 field from values
+                if (values.phone_no2 === '' || values.phone_no2 === undefined) {
+                    delete values.phone_no2; // Remove the phone_no2 field from values
                 }
-                values.doB = doBInput.format('YYYY-MM-DD')
-                values.studentId = prop.studentDetail?.studentId
+                values.dob = doBInput.format('YYYY-MM-DD')
                 values.status = true
 
-                if (user?.orgId === COMPANIES.DVOTION) {
-                    values.classIds = classValues.map(item => item.id)
-                }
-                if (user?.orgId === COMPANIES.WUSHU) {
-                    values.studentGroupId = groupValue
-                }
-
-                await axios.post('student/update', values, { withCredentials: true });
+                await axios.put('student/' + prop.studentDetail.id, values, { withCredentials: true });
 
                 setIsLoading(true)
                 dispatch(
@@ -266,7 +154,7 @@ const Profile = (prop) => {
     const handleDelete = async () => {
         setIsLoading(true)
         try {
-            await axios.post('student/delete?studentId=' + prop.studentDetail?.studentId, { withCredentials: true });
+            await axios.delete('student/' + prop.studentDetail?.id, { withCredentials: true });
 
             dispatch(
                 openSnackbar({
@@ -320,14 +208,14 @@ const Profile = (prop) => {
     return (
         <Grid container spacing={gridSpacing}>
             <Grid item sm={6} md={4}>
-                <SubCard title={prop.studentDetail?.studentName} contentSX={{ textAlign: 'center' }}>
+                <SubCard title={prop.studentDetail?.name} contentSX={{ textAlign: 'center' }}>
                     <Grid container spacing={2}>
                         <Grid item xs={12}>
                             <Avatar alt="User 1" src={Avatar1} sx={{ width: 100, height: 100, margin: '0 auto' }} />
                         </Grid>
                         <Grid item xs={12}>
                             <Typography variant="subtitle2" align="center">
-                                {prop.studentDetail?.bio ? prop.studentDetail?.bio : prop.studentDetail?.studentName + '...'}
+                                {prop.studentDetail?.bio ? prop.studentDetail?.bio : prop.studentDetail?.name + '...'}
                             </Typography>
                         </Grid>
                     </Grid>
@@ -340,14 +228,14 @@ const Profile = (prop) => {
                             <Grid container spacing={gridSpacing}>
                                 <Grid item xs={12}>
                                     <TextField
-                                        id="studentName"
+                                        id="name"
                                         fullWidth
                                         label="Name"
-                                        name="studentName"
-                                        value={formik.values.studentName}
+                                        name="name"
+                                        value={formik.values.name}
                                         onChange={formik.handleChange}
-                                        error={formik.touched.studentName && Boolean(formik.errors.studentName)}
-                                        helperText={formik.touched.studentName && formik.errors.studentName}
+                                        error={formik.touched.name && Boolean(formik.errors.name)}
+                                        helperText={formik.touched.name && formik.errors.name}
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
@@ -364,31 +252,31 @@ const Profile = (prop) => {
                                 </Grid>
                                 <Grid item md={6} xs={12}>
                                     <TextField
-                                        id="guardianContact1"
+                                        id="phone_no1"
                                         fullWidth
                                         label="Phone number 1"
-                                        name="guardianContact1"
-                                        value={formik.values.guardianContact1}
+                                        name="phone_no1"
+                                        value={formik.values.phone_no1}
                                         onChange={formik.handleChange}
-                                        error={formik.touched.guardianContact1 && Boolean(formik.errors.guardianContact1)}
-                                        helperText={formik.touched.guardianContact1 && formik.errors.guardianContact1}
+                                        error={formik.touched.phone_no1 && Boolean(formik.errors.phone_no1)}
+                                        helperText={formik.touched.phone_no1 && formik.errors.phone_no1}
                                     />
                                 </Grid>
                                 <Grid item md={6} xs={12}>
                                     <TextField
-                                        id="guardianContact2"
+                                        id="phone_no2"
                                         fullWidth label="Phone number 2"
-                                        name="guardianContact2"
-                                        value={formik.values.guardianContact2}
+                                        name="phone_no2"
+                                        value={formik.values.phone_no2}
                                         onChange={formik.handleChange}
-                                        error={formik.touched.guardianContact2 && Boolean(formik.errors.guardianContact2)}
-                                        helperText={formik.touched.guardianContact2 && formik.errors.guardianContact2}
+                                        error={formik.touched.phone_no2 && Boolean(formik.errors.phone_no2)}
+                                        helperText={formik.touched.phone_no2 && formik.errors.phone_no2}
                                     />
                                 </Grid>
                                 <Grid item md={6} xs={12}>
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                                         <DatePicker
-                                            id="doB"
+                                            id="dob"
                                             renderInput={(props) => <TextField fullWidth {...props} helperText="" />}
                                             label="Birthday"
                                             value={doBInput}
@@ -425,52 +313,6 @@ const Profile = (prop) => {
                                         helperText={formik.touched.bio && formik.errors.bio}
                                     />
                                 </Grid>
-                                {user?.orgId === COMPANIES.WUSHU ?
-                                    <>
-                                        <Grid item md={6} xs={12}>
-                                            <TextField
-                                                id="slot"
-                                                fullWidth
-                                                label="Class"
-                                                name="slot"
-                                                value={formik.values.slot}
-                                                onChange={formik.handleChange}
-                                                error={formik.touched.slot && Boolean(formik.errors.slot)}
-                                                helperText={formik.touched.slot && formik.errors.slot}
-                                            />
-                                        </Grid>
-                                        <Grid item md={6} xs={12}>
-                                            <TextField
-                                                id="groupValue"
-                                                select
-                                                fullWidth
-                                                label="Group"
-                                                value={groupValue}
-                                                onChange={handleChangeGroup}
-                                            >
-                                                {groupData?.map((groupItem) => (
-                                                    <MenuItem key={groupItem.id} value={groupItem.id}>
-                                                        {groupItem.groupName}
-                                                    </MenuItem>
-                                                ))}
-                                            </TextField>
-                                        </Grid>
-                                    </>
-                                    : <></>}
-                                {user?.orgId === COMPANIES.DVOTION ?
-                                    <Grid item md={6} xs={12}>
-                                        <Autocomplete
-                                            id="classes"
-                                            name="classes"
-                                            multiple
-                                            options={classData}
-                                            getOptionLabel={(option) => option.name}
-                                            value={classValues}
-                                            onChange={handleOnChange}
-                                            renderInput={(params) => <TextField label="Class"{...params} />}
-                                        />
-                                    </Grid>
-                                    : <></>}
                                 <Grid item xs={12}>
                                     <Grid spacing={2} container justifyContent="flex-end">
                                         <Grid item>
@@ -502,7 +344,7 @@ const Profile = (prop) => {
                                             <DialogContentText id="alert-dialog-slide-description1">
                                                 <Typography variant="body2" component="span">
                                                     Are you sure to delete&nbsp;<Typography component="span" variant="subtitle1" color="secondary">
-                                                        {prop.studentDetail?.studentName ?? ''}
+                                                        {prop.studentDetail?.name ?? ''}
                                                     </Typography>? This action cannot be undone.
                                                 </Typography>
                                             </DialogContentText>

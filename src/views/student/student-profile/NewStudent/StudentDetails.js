@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // material-ui
@@ -8,16 +8,14 @@ import {
     TextField,
     FormHelperText,
     Button,
-    Stack,
-    Autocomplete,
-    MenuItem
+    Stack
 } from '@mui/material';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import InputLabel from 'ui-component/extended/Form/InputLabel';
 import AnimateButton from 'ui-component/extended/AnimateButton';
-import { COMPANIES, PHONE_NO_REGEX } from 'store/constant';
+import { PHONE_NO_REGEX } from 'store/constant';
 import { openSnackbar } from 'store/slices/snackbar';
 import CustomSkeleton from 'ui-component/custom/CustomSkeleton';
 import { useDispatch } from 'store';
@@ -47,112 +45,10 @@ const validationSchema = yup.object({
 
 // ==============================|| Columns Layouts ||============================== //
 function StudentDetails() {
-    const { logout, user } = useAuth();
+    const { logout } = useAuth();
     const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
-
-    // Get Group Data
-    const [groupData, setGroupData] = useState([]);
-    const [groupValue, setGroupValue] = useState(1);
-
-    const fetchGroupData = async () => {
-        try {
-            const response = await axios.get('studentGroup', { withCredentials: true });
-
-            setGroupData(response.data);
-            setIsLoading(false)
-        } catch (error) {
-            if (error?.response?.status === 401) {
-                dispatch(
-                    openSnackbar({
-                        open: true,
-                        message: 'Login Expired! Please re-login!',
-                        variant: 'alert',
-                        alert: {
-                            color: 'error'
-                        },
-                        close: true
-                    })
-                );
-                await logout();
-            } else {
-                dispatch(
-                    openSnackbar({
-                        open: true,
-                        message: 'Error Occurred!',
-                        variant: 'alert',
-                        alert: {
-                            color: 'error'
-                        },
-                        close: true
-                    })
-                );
-            }
-            console.log(error)
-        }
-    };
-
-    useEffect(() => {
-        if (user?.orgId === COMPANIES.WUSHU) {
-            fetchGroupData(); // Call the API function when the component mounts
-        }
-    }, []);
-
-    const handleOnChangeGroup = (event) => {
-        setGroupValue(event.target.value);
-    };
-
-    // Get Class Data
-    const [classData, setClassData] = useState([]);
-    const [classValues, setClassValues] = useState([]);
-
-    const fetchClassData = async () => {
-        try {
-            const response = await axios.get('class/list', { withCredentials: true });
-
-            setClassData(response.data);
-            setIsLoading(false)
-        } catch (error) {
-            if (error?.response?.status === 401) {
-                dispatch(
-                    openSnackbar({
-                        open: true,
-                        message: 'Login Expired! Please re-login!',
-                        variant: 'alert',
-                        alert: {
-                            color: 'error'
-                        },
-                        close: true
-                    })
-                );
-                await logout();
-            } else {
-                dispatch(
-                    openSnackbar({
-                        open: true,
-                        message: 'Error Occurred!',
-                        variant: 'alert',
-                        alert: {
-                            color: 'error'
-                        },
-                        close: true
-                    })
-                );
-            }
-            console.log(error)
-        }
-    };
-
-    useEffect(() => {
-        if (user?.orgId === COMPANIES.DVOTION) {
-            fetchClassData(); // Call the API function when the component mounts
-        }
-    }, []);
-
-    const handleOnChange = (event, newValue) => {
-        setClassValues(newValue)
-    };
 
     const formik = useFormik({
         initialValues: {
@@ -172,14 +68,7 @@ function StudentDetails() {
                     delete values.phone_no2; // Remove the phone_no2 field from values
                 }
                 values.status = true
-                if (user?.orgId === COMPANIES.WUSHU) {
-                    values.studentGroupId = groupValue
-                }
 
-                if (user?.orgId === COMPANIES.DVOTION) {
-                    values.classIds = classValues.map(item => item.id)
-                }
-                values.slot_count = 0
                 await axios.post('student', values, { withCredentials: true });
 
                 setIsLoading(true)
@@ -298,40 +187,6 @@ function StudentDetails() {
                             />
                             <FormHelperText>Please enter your phone number</FormHelperText>
                         </Grid>
-                        {user?.orgId === COMPANIES.WUSHU ?
-                            <Grid item md={6} xs={12}>
-                                <TextField
-                                    id="groupValue"
-                                    select
-                                    fullWidth
-                                    label="Group"
-                                    value={groupValue}
-                                    onChange={handleOnChangeGroup}
-                                >
-                                    {groupData?.map((groupItem) => (
-                                        <MenuItem key={groupItem.id} value={groupItem.id}>
-                                            {groupItem.groupName}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            </Grid>
-                            : <></>}
-                        {user?.orgId === COMPANIES.DVOTION ?
-                            <Grid item md={6} xs={12}>
-                                <InputLabel>Class</InputLabel>
-                                <Autocomplete
-                                    id="classes"
-                                    name="classes"
-                                    multiple
-                                    options={classData}
-                                    getOptionLabel={(option) => option.name}
-                                    value={classValues}
-                                    onChange={handleOnChange}
-                                    renderInput={(params) => <TextField {...params} />}
-                                />
-                                <FormHelperText>Please select class</FormHelperText>
-                            </Grid>
-                            : <></>}
                         <Grid item xs={12}>
                             <Stack direction="row" justifyContent="flex-end">
                                 <AnimateButton>
