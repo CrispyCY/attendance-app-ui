@@ -32,24 +32,24 @@ import * as yup from 'yup';
  * 'Enter your email'
  * yup.string Expected 0 arguments, but got 1 */
 const validationSchema = yup.object({
-    packageName: yup.string()
+    name: yup.string()
         .required('Package name is required')
         .min(4, 'Package name must be at least 3 characters')
         .max(24, 'Package name must not exceed 24 characters'),
-    packagePrice: yup.number()
+    price: yup.number()
         .required('Package price is required')
         .typeError('Price number must be a number')
         .positive('Price number is invalid')
         .min(1, "minimum 1")
         .max(999, "maximum 999"),
-    packageSlot: yup.number()
+    slot: yup.number()
         .required('Package class is required')
         .typeError('Package class must be a number')
         .integer("Package class must be an integer")
         .positive('Package class is invalid')
         .min(1, "minimum 1")
         .max(999, "maximum 999"),
-    packageExpiryDays: yup.number()
+    expiry_days: yup.number()
         .required('Package expiry days is required')
         .typeError('Package expiry days must be a number')
         .integer("Package class must be an integer")
@@ -67,10 +67,10 @@ function PackageDetails() {
 
     const formik = useFormik({
         initialValues: {
-            packageName: '',
-            packagePrice: 0,
-            packageSlot: 1,
-            packageExpiryDays: 1
+            name: '',
+            price: 0,
+            slot: 1,
+            expiry_days: 1
         },
         validationSchema,
         onSubmit: async (values, { setSubmitting }) => {
@@ -78,7 +78,7 @@ function PackageDetails() {
                 setIsLoading(true)
                 values.status = true
 
-                await axios.post('package/add', values, { withCredentials: true });
+                await axios.post('package', values, { withCredentials: true });
 
                 dispatch(
                     openSnackbar({
@@ -140,13 +140,13 @@ function PackageDetails() {
                             <TextField
                                 fullWidth
                                 placeholder="Enter package name"
-                                id="packageName"
-                                name="packageName"
+                                id="name"
+                                name="name"
                                 label="Package Name"
-                                value={formik.values.packageName}
+                                value={formik.values.name}
                                 onChange={formik.handleChange}
-                                error={formik.touched.packageName && Boolean(formik.errors.packageName)}
-                                helperText={formik.touched.packageName && formik.errors.packageName}
+                                error={formik.touched.name && Boolean(formik.errors.name)}
+                                helperText={formik.touched.name && formik.errors.name}
                             />
                             <FormHelperText>Please enter name</FormHelperText>
                         </Grid>
@@ -155,13 +155,13 @@ function PackageDetails() {
                             <TextField
                                 fullWidth
                                 placeholder="Enter package price"
-                                id="packagePrice"
-                                name="packagePrice"
+                                id="price"
+                                name="price"
                                 label="Package Price"
-                                value={formik.values.packagePrice}
+                                value={formik.values.price}
                                 onChange={formik.handleChange}
-                                error={formik.touched.packagePrice && Boolean(formik.errors.packagePrice)}
-                                helperText={formik.touched.packagePrice && formik.errors.packagePrice}
+                                error={formik.touched.price && Boolean(formik.errors.price)}
+                                helperText={formik.touched.price && formik.errors.price}
                             />
                             <FormHelperText>Please enter price</FormHelperText>
                         </Grid>
@@ -170,13 +170,13 @@ function PackageDetails() {
                             <TextField
                                 fullWidth
                                 placeholder="Enter package class count"
-                                id="packageSlot"
-                                name="packageSlot"
+                                id="slot"
+                                name="slot"
                                 label="Package Class Count"
-                                value={formik.values.packageSlot}
+                                value={formik.values.slot}
                                 onChange={formik.handleChange}
-                                error={formik.touched.packageSlot && Boolean(formik.errors.packageSlot)}
-                                helperText={formik.touched.packageSlot && formik.errors.packageSlot}
+                                error={formik.touched.slot && Boolean(formik.errors.slot)}
+                                helperText={formik.touched.slot && formik.errors.slot}
                             />
                             <FormHelperText>Please enter class count</FormHelperText>
                         </Grid>
@@ -187,13 +187,13 @@ function PackageDetails() {
                                     <TextField
                                         fullWidth
                                         placeholder="Enter package expiry days"
-                                        id="packageExpiryDays"
-                                        name="packageExpiryDays"
+                                        id="expiry_days"
+                                        name="expiry_days"
                                         label="Package Expiry Days"
-                                        value={formik.values.packageExpiryDays}
+                                        value={formik.values.expiry_days}
                                         onChange={formik.handleChange}
-                                        error={formik.touched.packageExpiryDays && Boolean(formik.errors.packageExpiryDays)}
-                                        helperText={formik.touched.packageExpiryDays && formik.errors.packageExpiryDays}
+                                        error={formik.touched.expiry_days && Boolean(formik.errors.expiry_days)}
+                                        helperText={formik.touched.expiry_days && formik.errors.expiry_days}
                                     />
                                     <FormHelperText>Please enter expiry days</FormHelperText>
                                 </Grid>

@@ -51,7 +51,7 @@ const DropDownActions = (prop) => {
                     }}
                 >
                     <MenuItem component={Link}
-                        to={`/package/edit-package/${prop.prop.packageId}`}>
+                        to={`/package/edit-package/${prop.prop.id}`}>
                         <ListItemIcon >
                             <EditTwoToneIcon fontSize="small" />
                         </ListItemIcon>

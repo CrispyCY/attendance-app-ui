@@ -5,11 +5,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 // material-ui
 import {
     Grid, Button, Box,
-    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Slide, Typography, AppBar, Tabs, Tab
+    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Slide, Typography,
 } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { useTheme } from '@mui/material/styles';
-import PropTypes from 'prop-types';
 
 // animation
 const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
@@ -46,17 +45,9 @@ export default function PurchasePackage() {
     // table columns
     const columns = [
         {
-            field: 'studentName',
+            field: 'name',
             headerName: 'Full name',
             width: 250,
-        },
-        {
-            field: 'studentCode',
-            headerName: 'ID',
-            width: 110,
-            align: 'left',
-            headerAlign: 'left',
-            hide: true,
         },
         {
             field: 'email',
@@ -67,45 +58,38 @@ export default function PurchasePackage() {
                 `${params.row.email ? params.row.email : "-"} `
         },
         {
-            field: 'slot',
+            field: 'slot_count',
             headerName: 'Classes',
             width: 70,
             align: 'left',
             headerAlign: 'left',
         },
         {
-            field: 'overallClasses',
-            headerName: 'Total Classes',
-            width: 120,
-            align: 'left',
-            headerAlign: 'left',
-        },
-        {
-            field: 'slotExpiryDate',
+            field: 'slot_expiry_date',
             headerName: 'Classes Expiry Date',
             type: 'date',
             width: 165,
             align: 'left',
             headerAlign: 'left',
-            valueGetter: (params) => formatDateTime(params.row.slotExpiryDate),
+            valueGetter: (params) => formatDateTime(params.row.slot_expiry_date),
         },
         {
-            field: 'guardianContact1',
+            field: 'phone_no1',
             headerName: 'Contact 1',
             width: 135
         },
         {
-            field: 'guardianContact2',
+            field: 'phone_no2',
             headerName: 'Contact 2',
             width: 135,
             valueGetter: (params) =>
-                `${params.row.guardianContact2 ? params.row.guardianContact2 : "-"} `,
+                `${params.row.phone_no2 ? params.row.phone_no2 : "-"} `,
             hide: true
         }
     ];
 
     if (user?.orgId === COMPANIES.DVOTION) {
-        const fieldsToFilter = ['slot', 'slotExpiryDate'];
+        const fieldsToFilter = ['slot_count', 'slot_expiry_date'];
         fieldsToFilter.forEach((fieldToRemove) => {
             const fieldIndex = columns.findIndex((column) => column.field === fieldToRemove);
             if (fieldIndex !== -1) {
@@ -114,38 +98,14 @@ export default function PurchasePackage() {
         });
     }
 
-    // Get Unattend Data
+    // Get Student Data
     const [studentData, setStudentData] = useState(null);
-    const [studentGroup1, setStudentGroup1] = useState();
-    const [studentGroup2, setStudentGroup2] = useState();
-    const [studentGroup3, setStudentGroup3] = useState();
 
     const fetchStudentData = async () => {
         try {
             const response = await axios.get('student', { withCredentials: true });
 
             setStudentData(response.data);
-
-            const group1Data = [];
-            const group2Data = [];
-            const group3Data = [];
-
-            if (user?.orgId === COMPANIES.WUSHU) {
-                for (const key in response.data) {
-                    if (response.data[key].studentGroupId === 1) {
-                        group1Data.push(response.data[key]);
-                    } else if (response.data[key].studentGroupId === 2) {
-                        group2Data.push(response.data[key]);
-                    } else if (response.data[key].studentGroupId === 3) {
-                        group3Data.push(response.data[key]);
-                    }
-                }
-            }
-
-            setStudentGroup1(group1Data);
-            setStudentGroup2(group2Data);
-            setStudentGroup3(group3Data);
-
             setIsLoading(false)
         } catch (error) {
             if (error?.response?.status === 401) {
@@ -197,7 +157,7 @@ export default function PurchasePackage() {
 
     const [selectedValue, setSelectedValue] = useState([]);
 
-    // Mark Attendance Action
+    // Purchase package Action
     const [studentIds, setStudentIds] = useState([]);
     const [studentNames, setStudentNames] = useState([]);
     const [open, setOpen] = useState(false);
@@ -212,7 +172,7 @@ export default function PurchasePackage() {
         try {
             setIsLoading(true)
 
-            await axios.post('package/buyPackage', { studentId: studentIds, packageId: packageId }, { withCredentials: true });
+            await axios.post('package-transac', { studentIds: studentIds, packageId: packageId }, { withCredentials: true });
 
             dispatch(
                 openSnackbar({
@@ -265,48 +225,6 @@ export default function PurchasePackage() {
         }
     };
 
-    // Wushu tab display
-    const [tabValue, setTabValue] = useState(0);
-
-    const handleChange = (event, newValue) => {
-        setTabValue(newValue);
-    };
-
-    function TabPanel(props) {
-        const { children, value, index, ...other } = props;
-
-        return (
-            <div
-                role="tabpanel"
-                hidden={value !== index}
-                id={`full-width-tabpanel-${index}`}
-                aria-labelledby={`full-width-tab-${index}`}
-                {...other}
-            >
-                {value === index && (
-                    <Box sx={{ p: 0 }}>
-                        <Typography>{children}</Typography>
-                        {/* {children} */}
-                    </Box>
-                )}
-            </div>
-        );
-    }
-
-    TabPanel.propTypes = {
-        children: PropTypes.node,
-        index: PropTypes.number.isRequired,
-        value: PropTypes.number.isRequired,
-    };
-
-    function a11yProps(index) {
-        return {
-            id: `full-width-tab-${index}`,
-            'aria-controls': `full-width-tabpanel-${index}`,
-        };
-    }
-    const [selectionModel, setSelectionModel] = useState([]);
-
     return (
         <Grid container spacing={gridSpacing} justifyContent="center">
             {!isLoading ?
@@ -339,115 +257,25 @@ export default function PurchasePackage() {
                             >
                                 {
                                     studentData?.length ?
-                                        user?.orgId !== COMPANIES.WUSHU ?
-                                            <DataGrid
-                                                getRowId={(row) => row.studentId}
-                                                rows={studentData}
-                                                columns={columns}
-                                                onSelectionModelChange={(newSelectionModel) => {
-                                                    const selectedIDs = new Set(newSelectionModel);
-                                                    const selectedRowData = studentData.filter((row) => selectedIDs.has(row.studentId));
-                                                    setSelectedValue(selectedRowData);
-                                                }}
-                                                pageSize={pageSize}
-                                                onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-                                                rowsPerPageOptions={[5, 10, 20]}
-                                                checkboxSelection
-                                                disableSelectionOnClick
-                                                components={{
-                                                    Toolbar: GridToolbar,
-                                                }}
-                                                density="compact"
-                                            />
-                                            :
-                                            <>
-                                                <AppBar position="static" sx={{ height: 50 }}>
-                                                    <Tabs
-                                                        value={tabValue}
-                                                        onChange={handleChange}
-                                                        indicatorColor="secondary"
-                                                        textColor="inherit"
-                                                        variant="scrollable"
-                                                        aria-label="full width tabs example"
-                                                    >
-                                                        <Tab label="Group A" {...a11yProps(0)} />
-                                                        <Tab label="Group B" {...a11yProps(1)} />
-                                                        <Tab label="Group C" {...a11yProps(2)} />
-                                                    </Tabs>
-                                                </AppBar>
-                                                <TabPanel value={tabValue} index={0} dir={theme.direction}>
-                                                    <DataGrid
-                                                        style={{ height: 600 }}
-                                                        getRowId={(row) => row.studentId}
-                                                        rows={studentGroup1}
-                                                        columns={columns}
-                                                        onSelectionModelChange={(newSelectionModel) => {
-                                                            setSelectionModel(newSelectionModel);
-                                                            const selectedIDs = new Set(newSelectionModel);
-                                                            const selectedRowData = studentGroup1.filter((row) => selectedIDs.has(row.studentId));
-                                                            setSelectedValue(selectedRowData);
-                                                        }}
-                                                        pageSize={pageSize}
-                                                        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-                                                        rowsPerPageOptions={[5, 10, 20]}
-                                                        checkboxSelection
-                                                        disableSelectionOnClick
-                                                        components={{
-                                                            Toolbar: GridToolbar,
-                                                        }}
-                                                        density="compact"
-                                                        selectionModel={selectionModel}
-                                                    />
-                                                </TabPanel>
-                                                <TabPanel value={tabValue} index={1} dir={theme.direction}>
-                                                    <DataGrid
-                                                        style={{ height: 600 }}
-                                                        getRowId={(row) => row.studentId}
-                                                        rows={studentGroup2}
-                                                        columns={columns}
-                                                        onSelectionModelChange={(newSelectionModel) => {
-                                                            setSelectionModel(newSelectionModel);
-                                                            const selectedIDs = new Set(newSelectionModel);
-                                                            const selectedRowData = studentGroup2.filter((row) => selectedIDs.has(row.studentId));
-                                                            setSelectedValue(selectedRowData);
-                                                        }}
-                                                        pageSize={pageSize}
-                                                        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-                                                        rowsPerPageOptions={[5, 10, 20]}
-                                                        checkboxSelection
-                                                        disableSelectionOnClick
-                                                        components={{
-                                                            Toolbar: GridToolbar,
-                                                        }}
-                                                        density="compact"
-                                                        selectionModel={selectionModel}
-                                                    />
-                                                </TabPanel>
-                                                <TabPanel value={tabValue} index={2} dir={theme.direction}>
-                                                    <DataGrid
-                                                        style={{ height: 600 }}
-                                                        getRowId={(row) => row.studentId}
-                                                        rows={studentGroup3}
-                                                        columns={columns}
-                                                        onSelectionModelChange={(newSelectionModel) => {
-                                                            setSelectionModel(newSelectionModel);
-                                                            const selectedIDs = new Set(newSelectionModel);
-                                                            const selectedRowData = studentGroup3.filter((row) => selectedIDs.has(row.studentId));
-                                                            setSelectedValue(selectedRowData);
-                                                        }}
-                                                        pageSize={pageSize}
-                                                        onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-                                                        rowsPerPageOptions={[5, 10, 20]}
-                                                        checkboxSelection
-                                                        disableSelectionOnClick
-                                                        components={{
-                                                            Toolbar: GridToolbar,
-                                                        }}
-                                                        density="compact"
-                                                        selectionModel={selectionModel}
-                                                    />
-                                                </TabPanel>
-                                            </>
+                                        <DataGrid
+                                            getRowId={(row) => row.id}
+                                            rows={studentData}
+                                            columns={columns}
+                                            onSelectionModelChange={(newSelectionModel) => {
+                                                const selectedIDs = new Set(newSelectionModel);
+                                                const selectedRowData = studentData.filter((row) => selectedIDs.has(row.id));
+                                                setSelectedValue(selectedRowData);
+                                            }}
+                                            pageSize={pageSize}
+                                            onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                                            rowsPerPageOptions={[5, 10, 20]}
+                                            checkboxSelection
+                                            disableSelectionOnClick
+                                            components={{
+                                                Toolbar: GridToolbar,
+                                            }}
+                                            density="compact"
+                                        />
                                         :
                                         <CustomSkeleton />
                                 }
@@ -458,8 +286,8 @@ export default function PurchasePackage() {
                     <Grid item xs={4}>
                         <Button variant="contained" disabled={selectedValue.length > 0 ? false : true} fullWidth onClick={
                             () => {
-                                const studentIds = selectedValue.length > 0 ? selectedValue.map(item => item.studentId) : [];
-                                const studentNames = selectedValue.length > 0 ? selectedValue.map(item => item.studentName) : [];
+                                const studentIds = selectedValue.length > 0 ? selectedValue.map(item => item.id) : [];
+                                const studentNames = selectedValue.length > 0 ? selectedValue.map(item => item.name) : [];
                                 setStudentNames(studentNames)
                                 setStudentIds(studentIds)
                                 handleClickOpen();

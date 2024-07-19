@@ -19,7 +19,7 @@ const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={r
 
 // project imports
 import CustomSkeleton from 'ui-component/custom/CustomSkeleton';
-import { COMPANIES, gridSpacing } from 'store/constant';
+import { gridSpacing } from 'store/constant';
 import DropDownActions from './DropDownActions';
 import { useDispatch } from 'store';
 import { openSnackbar } from 'store/slices/snackbar';
@@ -36,7 +36,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 // ==============================|| SOCIAL PROFILE - FOLLOWER CARD ||============================== //
 
 const PackageDetailsCard = () => {
-    const { user, logout } = useAuth();
+    const { logout } = useAuth();
     const theme = useTheme();
     const [packageData, setPackageData] = useState();
     const [isLoading, setIsLoading] = useState(true);
@@ -96,7 +96,7 @@ const PackageDetailsCard = () => {
     const handleDelete = async () => {
         setIsLoading(true)
         try {
-            await axios.post('package/delete?PackageId=' + toDelete.packageId, { withCredentials: true });
+            await axios.delete('package/' + toDelete.id, { withCredentials: true });
 
             dispatch(
                 openSnackbar({
@@ -154,7 +154,7 @@ const PackageDetailsCard = () => {
                         <>
                             <Grid container spacing={gridSpacing}>
                                 {Array.from(packageData)?.map((packageItem) => (
-                                    <Grid item xs={12} md={6} key={packageItem.packageId}>
+                                    <Grid item xs={12} md={6} key={packageItem.id}>
                                         <Card
                                             sx={{
                                                 padding: '16px',
@@ -182,42 +182,36 @@ const PackageDetailsCard = () => {
                                                                 component="div"
                                                                 sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}
                                                             >
-                                                                {packageItem.packageName}
+                                                                {packageItem.name}
                                                             </Typography>
                                                             <Typography
                                                                 variant="subtitle1"
                                                                 sx={{ mt: 0.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}
                                                             >
                                                                 <AttachMoneyIcon sx={{ mr: '6px', fontSize: '16px', verticalAlign: 'text-top' }} />
-                                                                RM{packageItem.packagePrice ? packageItem.packagePrice : 0.00}
+                                                                RM{packageItem.price ? packageItem.price : 0.00}
                                                             </Typography>
                                                             <Typography
                                                                 variant="subtitle1"
                                                                 sx={{ mt: 0.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}
                                                             >
                                                                 <TagIcon sx={{ mr: '6px', fontSize: '16px', verticalAlign: 'text-top' }} />
-                                                                {packageItem.packageSlot ? packageItem.packageSlot : 0} classes
+                                                                {packageItem.slot ? packageItem.slot : 0} classes
                                                             </Typography>
-                                                            {
-                                                                user?.orgId === COMPANIES.WUSHU
-                                                                    ?
-                                                                    <Typography
-                                                                        variant="subtitle1"
-                                                                        sx={{ mt: 0.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}
-                                                                    >
-                                                                        <CalendarMonthIcon sx={{ mr: '6px', fontSize: '16px', verticalAlign: 'text-top' }} />
-                                                                        {packageItem.packageExpiryDays ? packageItem.packageExpiryDays : 0} days
-                                                                    </Typography>
-                                                                    :
-                                                                    <></>
-                                                            }
+                                                            <Typography
+                                                                variant="subtitle1"
+                                                                sx={{ mt: 0.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}
+                                                            >
+                                                                <CalendarMonthIcon sx={{ mr: '6px', fontSize: '16px', verticalAlign: 'text-top' }} />
+                                                                {packageItem.expiry_days ? packageItem.expiry_days : 0} days
+                                                            </Typography>
                                                         </Grid>
                                                         <DropDownActions prop={packageItem} />
                                                     </Grid>
                                                 </Grid>
                                                 <Grid item xs={12}>
                                                     <Button variant="contained" fullWidth startIcon={<ShoppingCartIcon />} component={Link}
-                                                        to={`/package/purchase-package/${packageItem.packageId}`}>
+                                                        to={`/package/purchase-package/${packageItem.id}`}>
                                                         Purchase
                                                     </Button>
                                                 </Grid>
@@ -255,7 +249,7 @@ const PackageDetailsCard = () => {
                                             <DialogContentText id="alert-dialog-slide-description1">
                                                 <Typography variant="body2" component="span">
                                                     Are you sure to delete&nbsp;<Typography component="span" variant="subtitle1" color="secondary">
-                                                        {toDelete.packageName}
+                                                        {toDelete.name}
                                                     </Typography>? This action cannot be undone.
                                                 </Typography>
                                             </DialogContentText>
